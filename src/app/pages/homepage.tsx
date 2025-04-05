@@ -34,12 +34,6 @@ export function CodeDisplay({
       language={language}
       showLineNumbers={showLineNumbers}
       theme={dracula}
-      // customStyle={{
-      //   minWidth:"object-fit",
-      //   width:"200px",
-      //   maxWidth:"o",
-      //   overflow: 'scroll',
-      // }}
       wrapLongLines={true}
     />
   );
@@ -200,7 +194,7 @@ function HomePage() {
 
             <div className="w-full flex items-center justify-center mt-6">
               <div className=" w-11/12 h-fit grid xl:grid-cols-3 gap-6">
-                {security_data.map((items, index) => {
+                {security_data.map((items) => {
                   return (
                     <div key={items.id} className=" col-span-1 w-full h-fit">
                       <Card className="px-6 pb-4 h-full transition-all xl:h-[260px] hover:-translate-y-2  hover:transition-all">
@@ -508,5 +502,4 @@ function HomePage() {
   );
 }
 
-// linear-gradient(135deg, #1e293b, #1e40af)
 export default HomePage;
