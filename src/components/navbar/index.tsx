@@ -16,9 +16,7 @@ import {
     DropdownMenu,
     Modal,
     ModalContent,
-    ModalHeader,
     ModalBody,
-    ModalFooter,
     useDisclosure,
     Input,
     Divider
@@ -69,15 +67,11 @@ export function MainModal({children,iconComponent}:{children:React.ReactNode; ic
       }}
     >
       <ModalContent className='p-0 m-0'>
-        {(onClose) => (
-          <>
             <ModalBody className='p-0 m-0'>
                    {
                     children
                    }
             </ModalBody>
-          </>
-        )}
       </ModalContent>
     </Modal>
   </>

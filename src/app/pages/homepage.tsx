@@ -2,7 +2,6 @@
 
 import Banner from "@/components/banner";
 import MainLayout from "@/components/main-layout";
-import SecurityFeatures from "@/features/home/security-features";
 import { security_data } from "@/features/home/security-features/dto/security-data";
 import {
   Button,
@@ -12,20 +11,11 @@ import {
   CardHeader,
   Input,
 } from "@heroui/react";
-import { Plug } from "lucide-react";
 import React from "react";
-import { FaAws } from "react-icons/fa6";
-import { FaMicrosoft } from "react-icons/fa6";
-import { FaGoogle } from "react-icons/fa6";
-import { SiDatadog } from "react-icons/si";
-import { SiSplunk } from "react-icons/si";
-import { MdOutlineSecurity } from "react-icons/md";
-import { SiElasticcloud } from "react-icons/si";
 import { integrationData } from "@/features/home/integration/dto/integration-data";
 import { FlipWords } from "@/components/animation/flip-words";
 import { Meteors } from "@/components/animation/meteors";
 import { AnimatingButton } from "@/components/animation/moving-border";
-import { Image } from "@heroui/react";
 import { Timeline } from "@/components/animation/timeline";
 import { CodeBlock, dracula } from "react-code-blocks";
 

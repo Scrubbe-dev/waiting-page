@@ -1,4 +1,4 @@
-import { ChevronRight, Github, LinkedinIcon, Twitter } from 'lucide-react'
+import { ChevronRight} from 'lucide-react'
 import React from 'react'
 import { FaDiscord, FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa6'
 
