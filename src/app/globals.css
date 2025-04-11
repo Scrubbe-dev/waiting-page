@@ -6,6 +6,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+640px, 768px, 1024px, 1280px, 1536px (Tailwind Default - sm, md, lg, xl, 2xl)
+Add breakpoint  screens: {'xs': '480px'} and {'1xl': '1440px'},
+Design for 1280px max width, beyond background color.
+Design for 375px (320px) smallest width without scroll bar
+*/
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
@@ -98,6 +105,7 @@
         padding: 0;
         box-sizing: border-box;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        utline: 1px solid white;
     }
 /* 
     body {
