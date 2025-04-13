@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
+import Image from "next/image";
 import * as THREE from "three";
 
 // Main App Component
@@ -19,8 +20,14 @@ export default function Landing() {
 function Header() {
   return (
     <header className="flex justify-between items-center px-8 py-4">
-      <div className="text-4xl font-bold text-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)]">
-        Scrubbe
+      <div className="relative cursor-pointer w-[141px] h-[40px] sm:w-[176px] sm:h-[50px] lg:w-[211px] lg:h-[60px]">
+        <Image
+          src="/scrubbe-01.png"
+          alt="scrubbe-01.png"
+          fill
+          sizes="(min-width: 360px) 100vw"
+          className="object-contain"
+        />
       </div>
       <AnalogClock />
     </header>
@@ -166,7 +173,7 @@ function FormModal({ onClose }: { onClose: () => void }) {
     };
   }, [onClose]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitted(true);
   };
