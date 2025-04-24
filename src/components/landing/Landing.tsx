@@ -1,12 +1,21 @@
 "use client";
+/*  eslint-disable  @typescript-eslint/no-unused-vars */
+/*  eslint-disable  @typescript-eslint/no-explicit-any */
+/*  eslint-disable  react/no-unescaped-entities */
 import { useState, useEffect, useRef, FormEvent } from "react";
 import Image from "next/image";
 import * as THREE from "three";
+import { useWaitingStore } from '../../stores/waitingStore'; 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+import { form } from "@heroui/react";
 
 // Main App Component
 export default function Landing() {
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden bg-gradient-to-br from-slate-800 to-slate-900 text-white">
+      <ToastContainer />
       <BackgroundAnimation />
       <Header />
       <MainContent />
@@ -143,27 +152,52 @@ function FeatureCard({
   );
 }
 
+
 // Form Modal Component
 function FormModal({ onClose }: { onClose: () => void }) {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const { loading, error, success, submitForm, resetState } = useWaitingStore();
   const modalRef = useRef<HTMLDivElement>(null);
+  const [formvalue,setFormValue] = useState<{fullname:string;email:string;company:string;role:string;message:string}>({fullname:"" ,email:"",company:"",role:"",message:""})
 
+  // Your existing useEffect hooks remain the same
   useEffect(() => {
-    if (isSubmitted) {
+    if (success) {
+      toast.success('Thank you for your submission! We will be in touch soon.', {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
       const timer = setTimeout(() => {
         onClose();
+        resetState();
       }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [isSubmitted, onClose]);
+  }, [success, onClose, resetState]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error, {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
+    }
+  }, [error]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
-      ) {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
         onClose();
+        resetState();
       }
     };
 
@@ -171,117 +205,173 @@ function FormModal({ onClose }: { onClose: () => void }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [onClose]);
+  }, [onClose, resetState]);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e:FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    const {fullname,email,company,role,message} = formvalue
+    if(fullname == undefined || email == undefined || company == undefined || role == undefined || message == undefined){
+      toast.error("Input can not be empty", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
+      return 
+    }
+    
+    await submitForm({
+      fullName: fullname ,
+      email: email,
+      company: company,
+      role: role,
+      message: message,
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4 overflow-y-auto">
       <div
         ref={modalRef}
-        className="w-full max-w-lg bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-8 border border-blue-400 border-opacity-20 shadow-2xl relative"
+        className="w-full max-w-2xl max-h-[90vh] bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg border border-blue-400 border-opacity-20 shadow-2xl relative flex flex-col"
       >
-        <span
-          className="absolute top-4 right-4 text-[2.5rem] text-blue-400 cursor-pointer transition-colors hover:text-blue-500"
-          onClick={onClose}
+        {/* Close button */}
+        <button
+          onClick={() => {
+            onClose();
+            resetState();
+          }}
+          className="absolute top-4 right-4 text-3xl text-blue-400 hover:text-blue-500 transition-colors z-10"
+          aria-label="Close modal"
         >
           &times;
-        </span>
+        </button>
 
-        <h1 className="text-3xl font-bold mb-6 text-center text-blue-400">
-          Get Early Access
-        </h1>
+        {/* Modal header */}
+        <div className="sticky top-0 bg-slate-800 bg-opacity-90 z-10 p-6 border-b border-blue-400 border-opacity-20">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-blue-400">
+            Get Early Access
+          </h1>
+        </div>
 
-        {!isSubmitted ? (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label htmlFor="name" className="block mb-2 font-medium">
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                required
-                className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
-              />
+        {/* Modal body - scrollable content */}
+        <div className="overflow-y-auto flex-1 p-6">
+          {!success ? (
+            <form onSubmit={handleSubmit} className="space-y-4" action='/' method="post">
+              <div>
+                <label htmlFor="name" className="block mb-2 font-medium">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formvalue.fullname}
+                  onChange={(e)=>setFormValue((value: any)=>({...value,fullname:e.target.value}))}
+                  required
+                  className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block mb-2 font-medium">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formvalue.email}
+                  onChange={(e)=>setFormValue((value: any)=>({...value,email:e.target.value}))}
+                  required
+                  className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="company" className="block mb-2 font-medium">
+                  Company
+                </label>
+                <input
+                  type="text"
+                  id="company"
+                  name="company"
+                  value={formvalue.company}
+                  onChange={(e)=>setFormValue((value: any)=>({...value,company:e.target.value}))}
+                  required
+                  className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="role" className="block mb-2 font-medium">
+                  Role
+                </label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formvalue.role}
+                  onChange={(e)=>setFormValue((value: any)=>({...value,role:e.target.value}))}
+                  required
+                  className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
+                >
+                  <option value="">Select your role</option>
+                  <option value="CISO">CISO</option>
+                  <option value="SECURITY_ENGINEER">Security Engineer</option>
+                  <option value="SOC_ANALYST">SOC Analyst</option>
+                  <option value="IT_MANAGER">IT Manager</option>
+                  <option value="OTHERS">Other</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="message" className="block mb-2 font-medium">
+                  How can Scrubbe help your organization?
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formvalue.message}
+                  onChange={(e)=>setFormValue((value: any)=>({...value,message:e.target.value}))}
+                  rows={4}
+                  className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
+                ></textarea>
+              </div>
+
+              <div className="pt-4  bottom-0 bg-slate-900 bg-opacity-80 backdrop-blur-sm pb-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none rounded font-semibold text-lg cursor-pointer transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-600 hover:to-blue-700 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-600/40 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {loading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </span>
+                  ) : 'Submit'}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="text-center p-6 md:p-8 bg-green-900 bg-opacity-10 border border-green-500 border-opacity-30 rounded-lg">
+              <h2 className="text-green-400 text-2xl mb-4">Thank You!</h2>
+              <p className="mb-4">
+                We've received your information and will be in touch soon
+                about early access to Scrubbe.
+              </p>
+              <p>
+                We're excited to revolutionize your security operations with
+                our next-generation SIEM and SOAR platform.
+              </p>
             </div>
-
-            <div className="mb-6">
-              <label htmlFor="email" className="block mb-2 font-medium">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                required
-                className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="company" className="block mb-2 font-medium">
-                Company
-              </label>
-              <input
-                type="text"
-                id="company"
-                required
-                className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
-              />
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="role" className="block mb-2 font-medium">
-                Role
-              </label>
-              <select
-                id="role"
-                required
-                className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
-              >
-                <option value="">Select your role</option>
-                <option value="CISO">CISO</option>
-                <option value="Security Engineer">Security Engineer</option>
-                <option value="SOC Analyst">SOC Analyst</option>
-                <option value="IT Manager">IT Manager</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div className="mb-6">
-              <label htmlFor="message" className="block mb-2 font-medium">
-                How can Scrubbe help your organization?
-              </label>
-              <textarea
-                id="message"
-                rows={4}
-                className="w-full py-3 px-4 rounded bg-slate-900 bg-opacity-50 border border-blue-400 border-opacity-20 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-30"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full py-4 bg-gradient-to-br from-blue-500 to-blue-600 text-white border-none rounded font-semibold text-lg cursor-pointer transition-all duration-300 hover:bg-gradient-to-br hover:from-blue-600 hover:to-blue-700 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-600/40"
-            >
-              Submit
-            </button>
-          </form>
-        ) : (
-          <div className="text-center p-8 bg-green-900 bg-opacity-10 border border-green-500 border-opacity-30 rounded-lg mt-8">
-            <h2 className="text-green-400 text-2xl mb-4">Thank You!</h2>
-            <p className="mb-4">
-              We&apos;ve received your information and will be in touch soon
-              about early access to Scrubbe.
-            </p>
-            <p>
-              We&apos;re excited to revolutionize your security operations with
-              our next-generation SIEM and SOAR platform.
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
